@@ -26,7 +26,7 @@ screen.key(['escape', 'q', 'C-c'], function(ch, key) {
 var peerTable = spacedtable({
   keys: true,
   label: 'Peer Stats',
-  columnSpacing: [60, 20, 15, 15, 15]
+  columnSpacing: [60, 20, 25, 12, 12, 15, 25, 15, 15]
 });
 
 
@@ -34,10 +34,16 @@ var updatePeerTable = function(err, peerstats) {
   if(peerstats) {
     var data = [];
     peerstats.peers.forEach(function(peer) {
-      data.push([peer.publicKey, peer.state, peer.bytesIn, peer.bytesOut, peer.last]);
+      var row = [peer.publicKey, peer.state, peer.switchLabel, peer.bytesIn, peer.bytesOut, peer.last, peer.receivedOutOfRange, peer.duplicates];
+      if(peer.isIncoming == 1) {
+        row.push('Yes');
+      } else {
+        row.push('No');
+      }
+      data.push(row);
     });
     peerTable.setData({
-      headers: ['Public Key', 'State', 'Bytes In', 'Bytes Out', 'last'],
+      headers: ['Public Key', 'State', 'Switch Label', 'Bytes In', 'Bytes Out', 'last', 'Received Out Of Range', 'Duplicates', 'Is Incoming?'],
       data: data
     });
     screen.render();
