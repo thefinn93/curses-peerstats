@@ -80,16 +80,10 @@ var updatePeerTable = function(peerstats) {
       }
       data.push(row);
     });
-    try {
-      peerTable.setData({
-        headers: ['Public Key', 'User', 'State', 'Switch Label', 'Bytes In', 'Bytes Out', 'last', 'Received Out Of Range', 'Duplicates', 'Is Incoming?'],
-        data: data
-      });
-    } catch(e) {
-      console.log(e.stack || e );
-      console.log(JSON.stringify(data));
-      // process.exit(1);
-    }
+    peerTable.setData({
+      headers: ['Public Key', 'User', 'State', 'Switch Label', 'Bytes In', 'Bytes Out', 'last', 'Received Out Of Range', 'Duplicates', 'Is Incoming?'],
+      data: data
+    });
     screen.render();
   } else {
     console.log('Failed to fetch peerStats!');
