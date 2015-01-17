@@ -37,11 +37,34 @@ screen.key(['p'], function(ch, key) {
 var peerTable = spacedtable({
   keys: true,
   label: 'Peer Stats',
-  columnSpacing: [60, 20, 20, 25, 12, 12, 15, 25, 15, 15]
+  columnSpacing: [60, 30, 20, 25, 12, 12, 15, 25, 15, 15]
 });
 
+var fetchPages = function(func, page, callback, results) {
+  results = results || {};
+  // console.log(page, results);
+  func(page, function(err, newResult) {
+    if (err) { throw err; }
+    for(var key in newResult) {
+      if(key) {
+        if(typeof newResult[key] == "object") {
+          if(results[key]) {
+            results[key] = results[key].concat(newResult[key]);
+          } else {
+            results[key] = newResult[key];
+          }
+        }
+      }
+    }
+    if (typeof newResult.more !== 'undefined') {
+      fetchPages(func, page + 1, callback, results);
+    } else {
+      callback(results);
+    }
+  });
+};
 
-var updatePeerTable = function(err, peerstats) {
+var updatePeerTable = function(peerstats) {
   if(peerstats) {
     var data = [];
     peerstats.peers.forEach(function(peer) {
@@ -56,10 +79,16 @@ var updatePeerTable = function(err, peerstats) {
       }
       data.push(row);
     });
-    peerTable.setData({
-      headers: ['Public Key', 'User', 'State', 'Switch Label', 'Bytes In', 'Bytes Out', 'last', 'Received Out Of Range', 'Duplicates', 'Is Incoming?'],
-      data: data
-    });
+    try {
+      peerTable.setData({
+        headers: ['Public Key', 'User', 'State', 'Switch Label', 'Bytes In', 'Bytes Out', 'last', 'Received Out Of Range', 'Duplicates', 'Is Incoming?'],
+        data: data
+      });
+    } catch(e) {
+      console.log(e.stack || e );
+      console.log(JSON.stringify(data));
+      // process.exit(1);
+    }
     screen.render();
   } else {
     console.log('Failed to fetch peerStats!');
@@ -69,11 +98,10 @@ var updatePeerTable = function(err, peerstats) {
 function connectCB(cjdns) {
   screen.append(peerTable);
   peerTable.focus();
-  cjdns.InterfaceController_peerStats(0, updatePeerTable);
+  fetchPages(cjdns.InterfaceController_peerStats, 0, updatePeerTable);
   setInterval(function() {
-    cjdns.InterfaceController_peerStats(0, updatePeerTable);
+    fetchPages(cjdns.InterfaceController_peerStats, 0, updatePeerTable);
   }, 500);
 }
 
 cjdnsadmin.connectWithAdminInfo(connectCB);
-screen.render();
