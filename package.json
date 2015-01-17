@@ -1,0 +1,28 @@
+{
+  "name": "curses-peerstats",
+  "version": "0.0.1",
+  "description": "A curses interface for viewing stats about your cjdns peers",
+  "main": "peerstats.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thefinn93/curses-peerstats"
+  },
+  "keywords": [
+    "cjdns",
+    "peerstats",
+    "mesh"
+  ],
+  "author": "Finn Herzfeld <finn@seattlemesh.net>",
+  "license": "GPLv3",
+  "bugs": {
+    "url": "https://github.com/thefinn93/curses-peerstats/issues"
+  },
+  "homepage": "https://github.com/thefinn93/curses-peerstats",
+  "dependencies": {
+    "blessed": "0.0.37",
+    "blessed-contrib": "0.0.3"
+  }
+}
