@@ -1,23 +1,13 @@
 #!/usr/bin/env node
 var cjdnsadmin = require('./lib/cjdnsadmin');
 var blessed = require('blessed');
-// var contrib = require('blessed-contrib');
+var contrib = require('blessed-contrib');
 var spacedtable = require('./lib/spacedtable');
 var publicToIp6 = require('./lib/publicToIp6').convert;
 var screen = blessed.screen();
 
-var connectingBox = blessed.box({
-  left: 'center',
-  top: 'center',
-  rows: 'shrink',
-  width: 'shrink',
-  border: {
-    type: 'line'
-  },
-  content: 'Connecting to cjdns...'
-});
+var grid = new contrib.grid({rows: 2, cols: 1});
 
-// screen.append(connectingBox);
 
 screen.key(['escape', 'q', 'C-c'], function(ch, key) {
   return process.exit(0);
@@ -33,12 +23,43 @@ screen.key(['p'], function(ch, key) {
   }
 });
 
-
-var peerTable = spacedtable({
+grid.set(0, 0, spacedtable, {
   keys: true,
   label: 'Peer Stats',
   columnSpacing: [60, 30, 20, 25, 12, 12, 15, 25, 15, 15]
 });
+grid.set(1, 0, contrib.sparklines, {label: 'Throughput'});
+
+
+grid.applyLayout(screen);
+screen.render();
+
+var peerTable = grid.get(0, 0);
+var sparkline = grid.get(1, 0);
+var history = {};
+
+var storeHistory = function(peers) {
+  var historyLength = 30;
+  peers.forEach(function(peer) {
+    if(history[peer.publicKey] === undefined) {
+      history[peer.publicKey] = {
+        in: [],
+        out: []
+      };
+    }
+    history[peer.publicKey].in.push(peer.bytesIn);
+    history[peer.publicKey].out.push(peer.bytesOut);
+    if(history[peer.publicKey].in.length > historyLength) {
+      history[peer.publicKey].in.shift();
+      history[peer.publicKey].out.shift();
+    }
+  });
+};
+
+var showSparkline = function() {
+  // Some way to detect the currently selected peer
+  sparkline.setData(['Upload', 'Download'], [history]);
+};
 
 var fetchPages = function(func, callback, page, results) {
   results = results || {};
@@ -85,14 +106,13 @@ var updatePeerTable = function(peerstats) {
       data: data
     });
     screen.render();
+    storeHistory(peerstats.peers);
   } else {
     console.log('Failed to fetch peerStats!');
   }
 };
 
 function connectCB(cjdns) {
-  screen.append(peerTable);
-  peerTable.focus();
   fetchPages(cjdns.InterfaceController_peerStats, updatePeerTable);
   setInterval(function() {
     fetchPages(cjdns.InterfaceController_peerStats, updatePeerTable);
