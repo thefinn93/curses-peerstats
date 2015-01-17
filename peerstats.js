@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 var cjdnsadmin = require('./lib/cjdnsadmin');
 var blessed = require('blessed');
-var contrib = require('blessed-contrib');
+// var contrib = require('blessed-contrib');
 var spacedtable = require('./lib/spacedtable');
+var publicToIp6 = require('./lib/publicToIp6').convert;
 var screen = blessed.screen();
 
 var connectingBox = blessed.box({
@@ -22,6 +23,16 @@ screen.key(['escape', 'q', 'C-c'], function(ch, key) {
   return process.exit(0);
 });
 
+var convertpubkeys = true;
+
+screen.key(['p'], function(ch, key) {
+  if(convertpubkeys) {
+    convertpubkeys = false;
+  } else {
+    convertpubkeys = true;
+  }
+});
+
 
 var peerTable = spacedtable({
   keys: true,
@@ -39,6 +50,9 @@ var updatePeerTable = function(err, peerstats) {
         row.push('Yes');
       } else {
         row.push('No');
+      }
+      if(convertpubkeys) {
+        row[0] = publicToIp6(peer.publicKey);
       }
       data.push(row);
     });
