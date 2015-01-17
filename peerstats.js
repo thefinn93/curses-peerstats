@@ -45,8 +45,7 @@ var updatePeerTable = function(err, peerstats) {
   if(peerstats) {
     var data = [];
     peerstats.peers.forEach(function(peer) {
-      name = peer.name || "-";
-      var row = [peer.publicKey, name, peer.state, peer.switchLabel, peer.bytesIn, peer.bytesOut, peer.last, peer.receivedOutOfRange, peer.duplicates];
+      var row = [peer.publicKey, (peer.user || "-"), peer.state, peer.switchLabel, peer.bytesIn, peer.bytesOut, peer.last, peer.receivedOutOfRange, peer.duplicates];
       if(peer.isIncoming == 1) {
         row.push('Yes');
       } else {
@@ -58,7 +57,7 @@ var updatePeerTable = function(err, peerstats) {
       data.push(row);
     });
     peerTable.setData({
-      headers: ['Public Key', 'Name', 'State', 'Switch Label', 'Bytes In', 'Bytes Out', 'last', 'Received Out Of Range', 'Duplicates', 'Is Incoming?'],
+      headers: ['Public Key', 'User', 'State', 'Switch Label', 'Bytes In', 'Bytes Out', 'last', 'Received Out Of Range', 'Duplicates', 'Is Incoming?'],
       data: data
     });
     screen.render();
