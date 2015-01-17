@@ -40,9 +40,9 @@ var peerTable = spacedtable({
   columnSpacing: [60, 30, 20, 25, 12, 12, 15, 25, 15, 15]
 });
 
-var fetchPages = function(func, page, callback, results) {
+var fetchPages = function(func, callback, page, results) {
   results = results || {};
-  // console.log(page, results);
+  page = page || 0;
   func(page, function(err, newResult) {
     if (err) { throw err; }
     for(var key in newResult) {
@@ -56,8 +56,9 @@ var fetchPages = function(func, page, callback, results) {
         }
       }
     }
+
     if (typeof newResult.more !== 'undefined') {
-      fetchPages(func, page + 1, callback, results);
+      fetchPages(func, callback, page + 1, results);
     } else {
       callback(results);
     }
@@ -98,9 +99,9 @@ var updatePeerTable = function(peerstats) {
 function connectCB(cjdns) {
   screen.append(peerTable);
   peerTable.focus();
-  fetchPages(cjdns.InterfaceController_peerStats, 0, updatePeerTable);
+  fetchPages(cjdns.InterfaceController_peerStats, updatePeerTable);
   setInterval(function() {
-    fetchPages(cjdns.InterfaceController_peerStats, 0, updatePeerTable);
+    fetchPages(cjdns.InterfaceController_peerStats, updatePeerTable);
   }, 500);
 }
 
